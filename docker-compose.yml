@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - my-network
+
+  restaurants-api:
+    build: .
+    container_name: restaurants-api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/restaurants-api
+    networks:
+      - my-network
+
+  seed:
+    image: node:18
+    container_name: seed-script
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
+    command: node seed.js
+    depends_on:
+      - mongodb
+    networks:
+      - my-network
+
+networks:
+  my-network:
+
+volumes:
+  mongo-data:
